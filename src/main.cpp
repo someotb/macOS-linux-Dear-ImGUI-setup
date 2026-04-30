@@ -1,8 +1,12 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "implot.h"
+
 #include <GLFW/glfw3.h>
 #include <cstdio>
+#include <vector>
+#include <cstdlib>
 
 int main()
 {
@@ -12,11 +16,10 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    #ifdef APPLE
+    #ifdef __APPLE__
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     #endif
 
-    // Создаём окно
     GLFWwindow* window = glfwCreateWindow(1280, 720, "My ImGui App", nullptr, nullptr);
     if (!window) return -1;
     glfwMakeContextCurrent(window);
@@ -24,7 +27,11 @@ int main()
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+    ImPlot::CreateContext();
     ImGui::StyleColorsDark();
+
+    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
@@ -36,9 +43,24 @@ int main()
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+        ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport());
+
+        // Data
+        std::vector<float> data_x(100);
+        std::vector<float> data_y(100);
+        for (size_t i = 0; i < data_x.size(); ++i)
+        {
+            data_x[i] = rand() % 100;
+            data_y[i] = i;
+        }
 
         ImGui::Begin("Hello!");
         ImGui::Text("Hello World!");
+        if (ImPlot::BeginPlot("test"))
+        {
+            ImPlot::PlotLine("data", data_x.data(), data_y.data(), data_x.size());
+            ImPlot::EndPlot();
+        }            
         ImGui::End();
 
         ImGui::Render();
@@ -50,10 +72,18 @@ int main()
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
+        if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            GLFWwindow* backup = glfwGetCurrentContext();
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+            glfwMakeContextCurrent(backup);
+        }
     }
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
+    ImPlot::DestroyContext();
     ImGui::DestroyContext();
     glfwDestroyWindow(window);
     glfwTerminate();
