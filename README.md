@@ -44,7 +44,7 @@ sudo apt install build-essential cmake libglfw3-dev libgl1-mesa-dev
 
 ```bash
 git clone --recurse-submodules https://github.com/someotb/macOS-linux-Dear-ImGUI-setup
-cd gui_test
+cd macOS-linux-Dear-ImGUI-setup
 ```
 
 > Флаг `--recurse-submodules` нужен чтобы подтянуть Dear ImGui автоматически.
@@ -60,7 +60,7 @@ cd gui_test
 ```bash
 mkdir build && cd build
 cmake ..
-cmake --build . -j$(nproc 2>/dev/null || sysctl -n hw.logicalcpu)
+cmake --build . -j
 ```
 
 ---
@@ -69,7 +69,7 @@ cmake --build . -j$(nproc 2>/dev/null || sysctl -n hw.logicalcpu)
 
 ```bash
 # Из папки build:
-./gui_test
+./main
 ```
 
 ---
@@ -84,6 +84,7 @@ gui_test/
 │   └── main.cpp          ← точка входа, здесь пишешь UI
 └── third_party/
     └── imgui/            ← Dear ImGui (git submodule)
+    └── implot/           ← ImPlot (git submodule)
 ```
 
 ---
